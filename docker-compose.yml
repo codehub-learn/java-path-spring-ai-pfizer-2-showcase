@@ -21,8 +21,8 @@ services:
           cpus: 4
           memory: 8G
         reservations:
-          cpus: 2
-          memory: 2G
+          cpus: 1
+          memory: 1G
           devices:
             - driver: nvidia
               count: 1
@@ -33,23 +33,20 @@ services:
     container_name: ollama-init
     environment:
       OLLAMA_HOST: "http://ollama:11434"
-    depends_on:
-      ollama:
-        condition: service_healthy
-    volumes:
-      - ollama_data:/root/.ollama
     entrypoint: [ "sh", "-lc" ]
     command:
       - |
         ollama pull llama3.2:3b
+    volumes:
+      - ollama_data:/root/.ollama
     restart: "no"
+    depends_on:
+      ollama:
+        condition: service_healthy
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     container_name: open-webui
-    depends_on:
-      ollama:
-        condition: service_healthy
     ports:
       - "3000:8080"
     environment:
@@ -57,6 +54,17 @@ services:
     volumes:
       - open_webui_data:/app/backend/data
     restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: 2
+          memory: 2G
+        reservations:
+          cpus: 0.25
+          memory: 512M
 
 volumes:
   ollama_data:
