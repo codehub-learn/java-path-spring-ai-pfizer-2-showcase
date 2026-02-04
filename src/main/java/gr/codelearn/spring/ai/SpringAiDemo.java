@@ -17,9 +17,15 @@ public class SpringAiDemo {
 		return _ -> {
 			ChatClient chatClient = chatClientBuilder.build();
 
-			String answer = chatClient.prompt("What is the capital of Greece? Answer in one word.").call().content();
+			String answer = chatClient
+					.prompt("""
+							List the 10 biggest cities in Greece by population.
+							Return as a numbered list with: City — short note (max 8 words).
+							""")
+					.call()
+					.content();
 
-			IO.println("Ollama says: " + answer);
+			IO.println("Ollama says:\n" + answer);
 		};
 	}
 }
