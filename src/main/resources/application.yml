@@ -14,7 +14,7 @@ spring:
         options:
           model: llama3.2:3b
           num-ctx: 4096
-          temperature: 0.5
+          temperature: 0.7
           keep-alive: "15m"
           top-p: 0.8
           top-k: 40
