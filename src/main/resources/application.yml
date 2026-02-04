@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: spring-ai-demo
+  main:
+    banner-mode: off
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      init:
+        pull-model-strategy: never
+        timeout: 5m
+        max-retries: 0
+      chat:
+        options:
+          model: llama3.2:3b
+          num-ctx: 4096
+          temperature: 0.7
+          keep-alive: "15m"
+          top-p: 0.7
+          top-k: 40
+
+logging:
+  level:
+    root: INFO
+    gr.codelearn: TRACE
+    org.springframework: INFO

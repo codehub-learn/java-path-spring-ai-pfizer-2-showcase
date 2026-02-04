@@ -1,0 +1,79 @@
+# https://docs.docker.com/compose/compose-file
+name: spring-ai-demo
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "ollama list >/dev/null 2>&1 || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: 4
+          memory: 8G
+        reservations:
+          cpus: 2
+          memory: 2G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ "gpu" ]
+
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: ollama-init
+    environment:
+      OLLAMA_HOST: "http://ollama:11434"
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: [ "sh", "-lc" ]
+    command:
+      - |
+        ollama pull llama3.2:3b
+    restart: "no"
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    depends_on:
+      ollama:
+        condition: service_healthy
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - open_webui_data:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  open_webui_data:
+
+
+#  pgvector:
+#    image: 'pgvector/pgvector:pg16'
+#    environment:
+#      - 'POSTGRES_DB=mydatabase'
+#      - 'POSTGRES_PASSWORD=secret'
+#      - 'POSTGRES_USER=myuser'
+#    labels:
+#      - "org.springframework.boot.service-connection=postgres"
+#    ports:
+#      - '5432'
+#  qdrant:
+#    image: 'qdrant/qdrant:latest'
+#    ports:
+#      - '6334'

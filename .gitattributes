@@ -1,0 +1,6 @@
+# Force shell scripts and HCL configs to always use LF (Unix line endings)
+*.sh    text eol=lf
+*.hcl   text eol=lf
+*.env*  text eol=lf
+/mvnw   text eol=lf
+*.cmd   text eol=crlf
