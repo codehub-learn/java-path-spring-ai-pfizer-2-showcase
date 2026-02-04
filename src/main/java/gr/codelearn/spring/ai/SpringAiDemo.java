@@ -5,6 +5,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import reactor.core.publisher.Flux;
 
 @SpringBootApplication
 public class SpringAiDemo {
@@ -26,6 +27,20 @@ public class SpringAiDemo {
 					.content();
 
 			IO.println("Ollama says:\n" + answer);
+
+			Flux<String> chunks = chatClient
+					.prompt("""
+							List the 30 biggest cities in the world by population. Do not return duplicates.
+							Return as a numbered list with: City — population.
+							Make sure to update with the latest information.
+							""")
+					.stream()
+					.content();
+
+			chunks.doOnNext(IO::print)     // print tokens as they arrive
+				  .doOnError(e -> System.err.println("\nStreaming error: " + e.getMessage()))
+				  .doOnComplete(() -> IO.println("\n\n(done)"))
+				  .blockLast();
 		};
 	}
 }
