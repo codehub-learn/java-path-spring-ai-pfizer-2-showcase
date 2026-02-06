@@ -37,6 +37,8 @@ services:
     command:
       - |
         ollama pull llama3.2:3b
+        ollama pull gemma3:4b
+        ollama pull smollm:1.7b
     volumes:
       - ollama_data:/root/.ollama
     restart: "no"
