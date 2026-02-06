@@ -29,7 +29,7 @@ spring:
         options:
           model: llama3.2:3b
           num-ctx: 4096
-          temperature: 0.7
+          temperature: 0.4
           keep-alive: "15m"
           # Nucleus sampling
           top-p: 0.8
@@ -40,4 +40,4 @@ logging:
     root: INFO
     gr.codelearn: TRACE
     org.springframework: INFO
-    org.springframework.ai: DEBUG
+    org.springframework.ai: INFO
