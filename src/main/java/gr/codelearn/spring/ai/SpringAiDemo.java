@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import reactor.core.publisher.Flux;
 
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
@@ -22,7 +23,6 @@ public class SpringAiDemo {
 		SpringApplication.run(SpringAiDemo.class, args);
 	}
 
-	@Bean
 	CommandLineRunner askOllamaViaChatClient(ChatClient.Builder chatClientBuilder) {
 		return _ -> {
 			var chatClient = chatClientBuilder
@@ -77,7 +77,6 @@ public class SpringAiDemo {
 		};
 	}
 
-	@Bean
 	CommandLineRunner askOllamaViaChatModel(ChatModel chatModel) {
 		return _ -> {
 			var response = chatModel.call(new Prompt("Give me 5 practical tips for improving Java performance in no more than 30 words " +
@@ -87,6 +86,47 @@ public class SpringAiDemo {
 			var metadata = response.getMetadata();
 			log.trace("Usage: {}", metadata.getUsage());
 			log.trace("Total duration: {}.", metadata.get("total-duration").toString());
+		};
+	}
+
+	@Bean
+	CommandLineRunner askOllamaInteractivelyViaChatModel(ChatModel chatModel) {
+		return _ -> {
+			try (Scanner scanner = new Scanner(System.in)) {
+				IO.println("Interactive AI-based Ollama CLI (type 'exit' to quit)");
+				while (true) {
+					IO.print("\nYou> ");
+					String userInput = scanner.nextLine();
+					if (userInput == null) {
+						break;
+					}
+
+					userInput = userInput.trim();
+					if (userInput.isEmpty()) {
+						continue;
+					}
+
+					if ("exit" .equalsIgnoreCase(userInput) || "quit" .equalsIgnoreCase(userInput)) {
+						IO.println("Bye.");
+						break;
+					}
+
+					try {
+						var response = chatModel.call(new Prompt(userInput));
+						IO.println("\nAI> " + response.getResult().getOutput().getText());
+
+						var metadata = response.getMetadata();
+						log.trace("Usage, prompt tokens:{}, completion tokens:{}, total tokens:{}.",
+								  metadata.getUsage().getPromptTokens(),
+								  metadata.getUsage().getCompletionTokens(),
+								  metadata.getUsage().getTotalTokens());
+						log.trace("Total duration: {}", Optional.ofNullable(metadata.get("total-duration")));
+					} catch (Exception e) {
+						log.error("ChatModel call failed: {}", e.getMessage(), e);
+						IO.println("Error: " + e.getMessage());
+					}
+				}
+			}
 		};
 	}
 }
