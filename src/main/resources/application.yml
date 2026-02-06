@@ -4,21 +4,21 @@ spring:
   main:
     banner-mode: off
   ai:
-    openai:
-      api-key: ${OPENAI_API_KEY}
-      # Use only if you route through an internal gateway / proxy:
-      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
-      # Optional metadata headers (only if your environment needs them)
-      # organization-id: ${OPENAI_ORG:}
-      # project-id: ${OPENAI_PROJECT:}
-      chat:
-        options:
-          # Pin a model explicitly (choose what you actually use)
-          model: ${OPENAI_CHAT_MODEL:gpt-4.1-mini}
-          temperature: ${OPENAI_TEMPERATURE:0.2}
-          # If your Spring AI version supports it:
-          max-tokens: ${OPENAI_MAX_TOKENS:800}
-          # top-p: ${OPENAI_TOP_P:1.0}
+    #    openai:
+    #      api-key: ${OPENAI_API_KEY}
+    #      # Use only if you route through an internal gateway / proxy:
+    #      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+    #      # Optional metadata headers (only if your environment needs them)
+    #      # organization-id: ${OPENAI_ORG:}
+    #      # project-id: ${OPENAI_PROJECT:}
+    #      chat:
+    #        options:
+    #          # Pin a model explicitly (choose what you actually use)
+    #          model: ${OPENAI_CHAT_MODEL:gpt-4.1-mini}
+    #          temperature: ${OPENAI_TEMPERATURE:0.2}
+    #          # If your Spring AI version supports it:
+    #          max-tokens: ${OPENAI_MAX_TOKENS:800}
+    #          # top-p: ${OPENAI_TOP_P:1.0}
     ollama:
       base-url: http://localhost:11434
       init:
