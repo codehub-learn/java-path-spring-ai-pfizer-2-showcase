@@ -35,6 +35,8 @@ spring:
           top-p: 0.8
           # Top-k sampling, restricts sampling to the top K most likely next tokens.
           top-k: 40
+          use-m-lock: true
+          use-m-map: true
 logging:
   level:
     root: INFO
