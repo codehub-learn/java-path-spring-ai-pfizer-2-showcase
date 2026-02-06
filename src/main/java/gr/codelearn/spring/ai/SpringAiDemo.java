@@ -3,7 +3,9 @@ package gr.codelearn.spring.ai;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -64,18 +66,27 @@ public class SpringAiDemo {
 					 .doOnError(e -> log.error("Streaming error: {}", e.getMessage(), e))
 					 .doOnComplete(() -> {
 						 log.info("Streaming complete. Full response: \n{}", fullResponse);
-						 log.debug("Usage, prompt tokens:{}, completion tokens:{}, total tokens:{}.",
+						 log.trace("Usage, prompt tokens:{}, completion tokens:{}, total tokens:{}.",
 								   responseMetadata.get().getUsage().getPromptTokens(),
 								   responseMetadata.get().getUsage().getCompletionTokens(),
 								   responseMetadata.get().getUsage().getTotalTokens());
-						 log.debug("Total duration: {}.", responseMetadata.get().get("total-duration").toString());
-						 log.debug("Done.");
+						 log.trace("Total duration: {}.", responseMetadata.get().get("total-duration").toString());
+						 log.debug("Done.\n\n");
 					 })
 					 .blockLast();
+		};
+	}
 
-			var x = chatResponse.getMetadata().getUsage();
-			var y = chatResponse.getMetadata().getRateLimit();
-			var z = chatResponse.getMetadata().get("total-duration");
+	@Bean
+	CommandLineRunner askOllamaViaChatModel(ChatModel chatModel) {
+		return _ -> {
+			var response = chatModel.call(new Prompt("Give me 5 practical tips for improving Java performance in no more than 30 words " +
+													 "per item. Return a numbered list."));
+			log.info("Ollama says:\n{}", response.getResult().getOutput().getText());
+
+			var metadata = response.getMetadata();
+			log.trace("Usage: {}", metadata.getUsage());
+			log.trace("Total duration: {}.", metadata.get("total-duration").toString());
 		};
 	}
 }
