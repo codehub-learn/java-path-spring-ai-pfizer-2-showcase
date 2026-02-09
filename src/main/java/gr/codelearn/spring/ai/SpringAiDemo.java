@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,6 +28,41 @@ public class SpringAiDemo {
 	}
 
 	@Bean
+	CommandLineRunner askOllama(ChatClient.Builder chatClientBuilder) {
+		return _ -> {
+			var chatClient = chatClientBuilder
+					.defaultSystem("""
+								   You are a helpful CLI assistant.
+								   Keep answers concise.
+								   When giving steps, use a numbered list.
+								   """)
+					.build();
+
+			String template = """
+							  Create a {style} explanation about: {topic}
+							  Audience: {audience}
+							  Constraints:
+							  - Provide exactly {count} bullet points
+							  - Each bullet must start with an imperative verb
+							  """;
+
+			// Values to inject
+			Map<String, Object> vars = Map.of(
+					"style", "practical",
+					"topic", "Java memory leaks",
+					"audience", "mid-level backend developers",
+					"count", 5
+											 );
+			ChatResponse response = chatClient
+					.prompt()
+					.user(u -> u.text(template).params(vars))
+					.call()
+					.chatResponse();
+
+			log.info("Template result:\n{}", response.getResult().getOutput().getText());
+		};
+	}
+
 	CommandLineRunner askOllamaViaChatClient(ChatClient.Builder chatClientBuilder) {
 		return _ -> {
 			var chatClient = chatClientBuilder
