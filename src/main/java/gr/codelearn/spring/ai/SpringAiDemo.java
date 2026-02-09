@@ -2,6 +2,8 @@ package gr.codelearn.spring.ai;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -12,6 +14,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,10 +26,15 @@ public class SpringAiDemo {
 		SpringApplication.run(SpringAiDemo.class, args);
 	}
 
+	@Bean
 	CommandLineRunner askOllamaViaChatClient(ChatClient.Builder chatClientBuilder) {
 		return _ -> {
 			var chatClient = chatClientBuilder
-					.defaultSystem("When asked for a list of data, never return duplicates and always return a numbered list.")
+					.defaultSystem("""
+								   You are a helpful CLI assistant.
+								   Keep answers concise.
+								   When giving steps, use a numbered list.
+								   """)
 					.build();
 
 			var chatResponse = chatClient
@@ -89,9 +97,13 @@ public class SpringAiDemo {
 		};
 	}
 
-	@Bean
 	CommandLineRunner askOllamaInteractivelyViaChatModel(ChatModel chatModel) {
 		return _ -> {
+			var systemInstructions = """
+									 You are a helpful CLI assistant.
+									 Be concise. When you provide steps, use a numbered list.
+									 If you are unsure, say so and ask a clarifying question.
+									 """;
 			try (Scanner scanner = new Scanner(System.in)) {
 				IO.println("Interactive AI-based Ollama CLI (type 'exit' to quit)");
 				while (true) {
@@ -106,23 +118,40 @@ public class SpringAiDemo {
 						continue;
 					}
 
-					if ("exit" .equalsIgnoreCase(userInput) || "quit" .equalsIgnoreCase(userInput)) {
+					if ("exit".equalsIgnoreCase(userInput) || "quit".equalsIgnoreCase(userInput)) {
 						IO.println("Bye.");
 						break;
 					}
 
 					try {
-						var response = chatModel.call(new Prompt(userInput));
-						IO.println("\nAI> " + response.getResult().getOutput().getText());
+						IO.print("\nAI> ");
 
-						var metadata = response.getMetadata();
-						log.trace("Usage, prompt tokens:{}, completion tokens:{}, total tokens:{}.",
-								  metadata.getUsage().getPromptTokens(),
-								  metadata.getUsage().getCompletionTokens(),
-								  metadata.getUsage().getTotalTokens());
-						log.trace("Total duration: {}", Optional.ofNullable(metadata.get("total-duration")));
+						Prompt prompt = new Prompt(List.of(
+								new SystemMessage(systemInstructions),
+								new UserMessage(userInput)));
+
+						var full = new StringBuilder();
+						Flux<ChatResponse> events = chatModel.stream(prompt);
+
+						events.doOnNext(cr -> {
+								  String chunk = cr.getResult().getOutput().getText();
+								  if (chunk != null && !chunk.isBlank()) {
+									  full.append(chunk);
+									  IO.print(chunk);
+								  }
+							  })
+							  .doOnError(e -> {
+								  log.error("Streaming error: {}", e.getMessage(), e);
+								  IO.println("\nError: " + e.getMessage());
+							  })
+							  .doOnComplete(() -> {
+								  IO.println("\n");
+								  log.trace("Full response chars: {}", full.length());
+							  })
+							  .blockLast();
+
 					} catch (Exception e) {
-						log.error("ChatModel call failed: {}", e.getMessage(), e);
+						log.error("Streaming call failed: {}", e.getMessage(), e);
 						IO.println("Error: " + e.getMessage());
 					}
 				}
