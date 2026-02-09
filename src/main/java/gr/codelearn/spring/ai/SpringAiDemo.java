@@ -2,6 +2,7 @@ package gr.codelearn.spring.ai;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.ChatResponseMetadata;
@@ -27,7 +28,6 @@ public class SpringAiDemo {
 		SpringApplication.run(SpringAiDemo.class, args);
 	}
 
-	@Bean
 	CommandLineRunner askOllamaUsingPromptTemplate(ChatClient.Builder chatClientBuilder) {
 		return _ -> {
 			var chatClient = chatClientBuilder
@@ -60,6 +60,62 @@ public class SpringAiDemo {
 					.chatResponse();
 
 			log.info("Template result:\n{}", response.getResult().getOutput().getText());
+		};
+	}
+
+	@Bean
+	CommandLineRunner askOllamaUsingFewShotPrompting(ChatClient.Builder chatClientBuilder) {
+		return _ -> {
+			var chatClient = chatClientBuilder
+					.defaultSystem("""
+								   You are a helpful CLI assistant.
+								   Keep answers concise.
+								   When giving steps, use a numbered list.
+								   """)
+					.build();
+
+			Prompt fewShot = new Prompt(List.of(
+					new SystemMessage("""
+									  You transform short support messages into STRICT JSON with keys:
+									  sentiment, summary, action_items.
+									  Output ONLY JSON. No markdown.
+									  """),
+
+					// Shot 1 (user -> assistant)
+					new UserMessage("Convert this text into the JSON format: \"Thanks, the issue is resolved quickly.\""),
+					new AssistantMessage("""
+										 {
+										   "sentiment": "positive",
+										   "summary": "Customer reports the issue was resolved quickly.",
+										   "action_items": ["Confirm closure with the customer"]
+										 }
+										 """),
+
+					// Shot 2 (user -> assistant)
+					new UserMessage("Convert this text into the JSON format: \"The app keeps crashing after login. Please fix ASAP.\""),
+					new AssistantMessage("""
+										 {
+										   "sentiment": "negative",
+										   "summary": "User reports repeated crashes after login and requests an urgent fix.",
+										   "action_items": ["Collect crash logs", "Reproduce the issue after login", "Prioritize a hotfix release"]
+										 }
+										 """),
+
+					// Real question (only user; model completes with the next assistant message)
+					new UserMessage("Convert this text into the JSON format: \"Checkout is slow on mobile, but it works. Any ideas?\"")
+											   ));
+
+			var chatResponse = chatClient
+					.prompt(fewShot)
+					.call()
+					.chatResponse();
+
+			log.info("Ollama says: {}", chatResponse.getResult().getOutput().getText());
+			var metadata = chatResponse.getMetadata();
+			log.trace("Usage: {}.", metadata.getUsage());
+			//I have no rate limit when using Ollama
+			//chatResponse.getMetadata().getRateLimit();
+			log.trace("Total duration: {}.", Optional.ofNullable(metadata.get("total-duration")));
 		};
 	}
 
