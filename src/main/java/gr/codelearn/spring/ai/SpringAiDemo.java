@@ -28,7 +28,7 @@ public class SpringAiDemo {
 	}
 
 	@Bean
-	CommandLineRunner askOllama(ChatClient.Builder chatClientBuilder) {
+	CommandLineRunner askOllamaUsingPromptTemplate(ChatClient.Builder chatClientBuilder) {
 		return _ -> {
 			var chatClient = chatClientBuilder
 					.defaultSystem("""
