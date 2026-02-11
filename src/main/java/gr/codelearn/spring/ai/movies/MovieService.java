@@ -15,7 +15,7 @@ import java.util.Map;
 @Service
 public class MovieService {
 	@Qualifier("moviesChatClient")
-	private final ChatClient chatClient;
+	private final ChatClient moviesChatClient;
 
 	public String getMovieRecommendationsAsString(final String genre, final int count) {
 		String template = """
@@ -24,7 +24,7 @@ public class MovieService {
 						  - Provide exactly {count} bullet points
 						  - Sort them in a descending order by year
 						  """;
-		return chatClient
+		return moviesChatClient
 				.prompt()
 				.user(u -> u.text(template).params(Map.of("genre", genre, "count", count)))
 				.call()
@@ -38,7 +38,7 @@ public class MovieService {
 						  - Provide exactly {count} movies
 						  - Sort them in a descending order by year
 						  """;
-		return chatClient
+		return moviesChatClient
 				.prompt()
 				.user(u -> u.text(template).params(Map.of("genre", genre, "count", count)))
 				.call()
@@ -53,11 +53,11 @@ public class MovieService {
 						  - Provide exactly {count} movies
 						  - Sort them in a descending order by year
 						  """;
-		return chatClient
+		return moviesChatClient
 				.prompt()
 				.user(u -> u.text(template).params(Map.of("genre", genre, "count", count)))
 				.call()
-				.entity(new ParameterizedTypeReference<List<MovieRecommendation>>() {
+				.entity(new ParameterizedTypeReference<>() {
 				});
 	}
 }
