@@ -3,6 +3,11 @@ spring:
     name: spring-ai-demo
   main:
     banner-mode: off
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${postgres.host:localhost}:${postgres.port:5432}/${postgres.db:spring-ai-demo}?reWriteBatchedInserts=true
+    username: ${postgres.user:postgres}
+    password: ${postgres.password:postgres}
   ai:
     #    openai:
     #      api-key: ${OPENAI_API_KEY}
@@ -35,6 +40,11 @@ spring:
           top-p: 0.8
           # Top-k sampling, restricts sampling to the top K most likely next tokens.
           top-k: 40
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
 logging:
   level:
     root: INFO

@@ -4,21 +4,25 @@ import io.netty.channel.ChannelOption;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
 
+import javax.sql.DataSource;
 import java.time.Duration;
 
 @Configuration
 public class AIConfig {
 	@Bean
-	public ChatClient moviesChatClient(ChatClient.Builder chatClientBuilder) {
+	public ChatClient moviesChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
 		return chatClientBuilder
 				.defaultSystem("""
 							   You are a helpful CLI assistant. You are expert in movies.
@@ -26,12 +30,21 @@ public class AIConfig {
 							   When asked for a list of things, use a numbered list.
 							   Always return the list of actors
 							   """)
-				.defaultAdvisors(MessageChatMemoryAdvisor.builder(getChatMemory()).build())
+				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
 				.build();
 	}
 
-	public ChatMemory getChatMemory() {
-		return MessageWindowChatMemory.builder().maxMessages(10).build();
+	@Bean
+	public ChatMemory getChatMemory(ChatMemoryRepository chatMemoryRepository) {
+		return MessageWindowChatMemory.builder().chatMemoryRepository(chatMemoryRepository).maxMessages(10).build();
+	}
+
+	@Bean
+	public ChatMemoryRepository chatMemoryRepository(DataSource dataSource) {
+		var jdbcTemplate = new JdbcTemplate(dataSource);
+		return JdbcChatMemoryRepository.builder()
+									   .jdbcTemplate(jdbcTemplate)
+									   .build();
 	}
 
 	@Bean

@@ -4,11 +4,12 @@ name: spring-ai-demo
 services:
   ollama:
     image: ollama/ollama:latest
-    container_name: ollama
     ports:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
+    networks:
+      - llm-network
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "sh", "-c", "ollama list >/dev/null 2>&1 || exit 1" ]
@@ -30,7 +31,6 @@ services:
 
   ollama-init:
     image: ollama/ollama:latest
-    container_name: ollama-init
     environment:
       OLLAMA_HOST: "http://ollama:11434"
     entrypoint: [ "sh", "-lc" ]
@@ -41,6 +41,8 @@ services:
         ollama pull smollm:1.7b
     volumes:
       - ollama_data:/root/.ollama
+    networks:
+      - llm-network
     restart: "no"
     depends_on:
       ollama:
@@ -48,13 +50,14 @@ services:
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
-    container_name: open-webui
     ports:
       - "3000:8080"
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
     volumes:
       - open_webui_data:/app/backend/data
+    networks:
+      - llm-network
     restart: unless-stopped
     depends_on:
       ollama:
@@ -67,7 +70,41 @@ services:
         reservations:
           cpus: 0.25
           memory: 512M
-
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=spring-ai-demo
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=spring-ai-demo
+    ports:
+      - "5432:5432"
+    volumes:
+      - ~/dbdata/postgresql/spring-ai-demo:/var/lib/postgresql/data
+    networks:
+      - postgres-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 3s
+        max_attempts: 3
+        window: 60s
+      resources:
+        limits:
+          cpus: 1
+          memory: 512M
+        reservations:
+          cpus: 0.25
+          memory: 128M
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+networks:
+  llm-network:
+  postgres-network:
 volumes:
   ollama_data:
   open_webui_data:
