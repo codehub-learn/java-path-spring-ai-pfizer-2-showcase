@@ -40,7 +40,7 @@ public class AIConfig {
 		return chatClientBuilder
 				.defaultSystem("""
 							   You are a helpful CLI assistant. You are expert in sports.
-							   Keep answers concise.
+							   Keep answers concise and short, no more than 50 words unless necessary such as a list.
 							   When asked for a list of things, use a numbered list.
 							   """)
 				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())

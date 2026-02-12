@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
@@ -20,15 +21,16 @@ public class ChatController {
 	private final ChatService chatService;
 
 	@PostMapping(
-			value = "/{conversationId}/ask",
+			headers = "x-conversation-id",
 			produces = MediaType.TEXT_EVENT_STREAM_VALUE
 	)
-	public Flux<String> ask(@PathVariable String tenant, @PathVariable String user, @PathVariable String conversationId,
+	public Flux<String> ask(@PathVariable String tenant, @PathVariable String user,
+							@RequestHeader("x-conversation-id") String conversationId,
 							@RequestBody AskRequest request) {
 		return chatService.ask(new Key(tenant, user, conversationId), request.question());
 	}
 
-	@GetMapping(value = "/{conversationId}/messages", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(headers = "x-conversation-id", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<ChatMessageDto> messages(@PathVariable String tenant, @PathVariable String user, @PathVariable String conversationId) {
 		return chatService.getConversation(new Key(tenant, user, conversationId));
 	}
