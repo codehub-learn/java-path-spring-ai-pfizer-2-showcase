@@ -39,6 +39,8 @@ services:
         ollama pull llama3.2:3b
         ollama pull gemma3:4b
         ollama pull smollm:1.7b
+        ollama pull qwen3:4b
+        ollama pull phi3:3.8b
     volumes:
       - ollama_data:/root/.ollama
     networks:

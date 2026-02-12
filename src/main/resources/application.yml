@@ -32,7 +32,7 @@ spring:
         max-retries: 0
       chat:
         options:
-          model: llama3.2:3b
+          model: qwen3:4b
           num-ctx: 4096
           temperature: 0.4
           keep-alive: "15m"

@@ -35,6 +35,19 @@ public class AIConfig {
 	}
 
 	@Bean
+	@Primary
+	public ChatClient ChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
+		return chatClientBuilder
+				.defaultSystem("""
+							   You are a helpful CLI assistant. You are expert in sports.
+							   Keep answers concise.
+							   When asked for a list of things, use a numbered list.
+							   """)
+				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+				.build();
+	}
+
+	@Bean
 	public ChatMemory getChatMemory(ChatMemoryRepository chatMemoryRepository) {
 		return MessageWindowChatMemory.builder().chatMemoryRepository(chatMemoryRepository).maxMessages(10).build();
 	}
@@ -58,17 +71,17 @@ public class AIConfig {
 	}
 
 	@Bean
+	@Primary
+	public WebClient.Builder webClientBuilder(ReactorClientHttpConnector aiClientHttpConnector) {
+		return WebClient.builder().clientConnector(aiClientHttpConnector);
+	}
+
+	@Bean
 	public ReactorClientHttpConnector aiClientHttpConnector(ConnectionProvider aiConnectionProvider) {
 		HttpClient httpClient = HttpClient.create(aiConnectionProvider)
 										  .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
 										  .responseTimeout(Duration.ofSeconds(180)); // key setting for ReadTimeoutException
 
 		return new ReactorClientHttpConnector(httpClient);
-	}
-
-	@Bean
-	@Primary
-	public WebClient.Builder webClientBuilder(ReactorClientHttpConnector aiClientHttpConnector) {
-		return WebClient.builder().clientConnector(aiClientHttpConnector);
 	}
 }
