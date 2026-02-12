@@ -1,4 +1,4 @@
-package gr.codelearn.spring.ai.movies;
+package gr.codelearn.spring.ai;
 
 import io.netty.channel.ChannelOption;
 import org.springframework.ai.chat.client.ChatClient;

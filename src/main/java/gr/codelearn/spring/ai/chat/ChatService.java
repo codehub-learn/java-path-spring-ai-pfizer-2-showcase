@@ -1,4 +1,4 @@
-package gr.codelearn.spring.ai.movies.chat;
+package gr.codelearn.spring.ai.chat;
 
 import gr.codelearn.spring.ai.Key;
 import lombok.RequiredArgsConstructor;
