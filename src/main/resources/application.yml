@@ -32,7 +32,7 @@ spring:
         max-retries: 0
       chat:
         options:
-          model: qwen3:4b
+          model: phi3:14b
           num-ctx: 4096
           temperature: 0.4
           keep-alive: "15m"
@@ -45,6 +45,7 @@ spring:
         repository:
           jdbc:
             initialize-schema: always
+            schema: classpath:schema.sql
 logging:
   level:
     root: INFO

@@ -52,7 +52,7 @@ public class AIConfig {
 		return MessageWindowChatMemory.builder().chatMemoryRepository(chatMemoryRepository).maxMessages(10).build();
 	}
 
-	@Bean
+	//	We will use our own custom repository
 	public ChatMemoryRepository chatMemoryRepository(DataSource dataSource) {
 		var jdbcTemplate = new JdbcTemplate(dataSource);
 		return JdbcChatMemoryRepository.builder()
