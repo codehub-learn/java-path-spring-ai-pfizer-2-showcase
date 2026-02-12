@@ -1,7 +1,9 @@
 package gr.codelearn.spring.ai.movies;
 
+import gr.codelearn.spring.ai.Key;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.converter.ListOutputConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
@@ -17,7 +19,7 @@ public class MovieService {
 	@Qualifier("moviesChatClient")
 	private final ChatClient moviesChatClient;
 
-	public String getMovieRecommendationsAsString(final String genre, final int count) {
+	public String getMovieRecommendationsAsString(final String genre, final int count, final Key key) {
 		String template = """
 						  Generate a list of movies for the given {genre}.
 						  Constraints:
@@ -26,12 +28,13 @@ public class MovieService {
 						  """;
 		return moviesChatClient
 				.prompt()
+				.advisors(a -> a.param(ChatMemory.CONVERSATION_ID, key.toString()))
 				.user(u -> u.text(template).params(Map.of("genre", genre, "count", count)))
 				.call()
 				.content();
 	}
 
-	public List<String> getMovieRecommendationsAsList(final String genre, final int count) {
+	public List<String> getMovieRecommendationsAsList(final String genre, final int count, final Key key) {
 		String template = """
 						  Generate a list of movies for the given {genre}.
 						  Constraints:
@@ -40,13 +43,14 @@ public class MovieService {
 						  """;
 		return moviesChatClient
 				.prompt()
+				.advisors(a -> a.param(ChatMemory.CONVERSATION_ID, key.toString()))
 				.user(u -> u.text(template).params(Map.of("genre", genre, "count", count)))
 				.call()
 				//.entity(List.class);// raw
 				.entity(new ListOutputConverter(new DefaultConversionService()));
 	}
 
-	public List<MovieRecommendation> getMovieRecommendationsAsObject(final String genre, final int count) {
+	public List<MovieRecommendation> getMovieRecommendationsAsObject(final String genre, final int count, final Key key) {
 		String template = """
 						  Generate a list of movies for the given {genre}.
 						  Constraints:
@@ -55,6 +59,7 @@ public class MovieService {
 						  """;
 		return moviesChatClient
 				.prompt()
+				.advisors(a -> a.param(ChatMemory.CONVERSATION_ID, key.toString()))
 				.user(u -> u.text(template).params(Map.of("genre", genre, "count", count)))
 				.call()
 				.entity(new ParameterizedTypeReference<>() {
