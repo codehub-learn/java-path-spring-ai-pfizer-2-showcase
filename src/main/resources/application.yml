@@ -36,6 +36,7 @@ spring:
           num-ctx: 4096
           temperature: 0.4
           keep-alive: "15m"
+          ### Sampling controls (Top-K and Top-P)
           # Nucleus sampling
           top-p: 0.8
           # Top-k sampling, restricts sampling to the top K most likely next tokens.
