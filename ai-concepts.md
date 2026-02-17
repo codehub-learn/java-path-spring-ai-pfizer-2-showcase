@@ -4,6 +4,8 @@
 
 This section describes core concepts that Spring AI uses. We recommend reading it closely to understand the ideas behind how Spring AI is
 implemented.
+Taken from the [official Spring AI documentation](https://docs.spring.io/spring-ai/reference/2.0/concepts.html). Visit the link for more and
+up-to-date-information.
 
 ## Models
 

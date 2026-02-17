@@ -1,3 +1,8 @@
+# Prompt Engineering Techniques
+
+Taken from the [official Spring AI documentation](https://docs.spring.io/spring-ai/reference/2.0/api/chat/prompt-engineering-patterns.
+html). Visit the link for more and up-to-date-information.
+
 ## Zero-Shot Prompting
 
 Zero-shot prompting involves asking an AI to perform a task without providing any examples. This approach tests the model’s ability to
