@@ -74,7 +74,7 @@ services:
           cpus: 0.25
           memory: 512M
   postgres:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:0.8.1-pg17-trixie
     restart: unless-stopped
     environment:
       - POSTGRES_HOST=spring-ai-demo
