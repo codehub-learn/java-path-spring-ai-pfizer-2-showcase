@@ -42,6 +42,7 @@ services:
         ollama pull qwen3:4b
         ollama pull phi3:3.8b
         ollama pull phi3:14b
+        ollama pull nomic-embed-text
     volumes:
       - ollama_data:/root/.ollama
     networks:
