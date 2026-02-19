@@ -24,6 +24,8 @@ spring:
     #          # If your Spring AI version supports it:
     #          max-tokens: ${OPENAI_MAX_TOKENS:800}
     #          # top-p: ${OPENAI_TOP_P:1.0}
+    model:
+      embedding: ollama
     ollama:
       base-url: http://localhost:11434
       init:
@@ -33,20 +35,34 @@ spring:
       chat:
         options:
           model: phi3:14b
-          num-ctx: 4096
-          temperature: 0.4
-          keep-alive: "15m"
+          num-ctx: 4096 # input context window
+          num-predict: 256 # max generated tokens
+          temperature: 0.7
+          keep-alive: 15m
           ### Sampling controls (Top-K and Top-P)
           # Nucleus sampling
           top-p: 0.8
           # Top-k sampling, restricts sampling to the top K most likely next tokens.
           top-k: 40
+      embedding:
+        options:
+          model: nomic-embed-text # alt. mxbai-embed-large
+          keep-alive: 15m
+
     chat:
       memory:
         repository:
           jdbc:
             initialize-schema: always
             schema: classpath:schema.sql
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        schema-name: public
+        table-name: vector_store
+        index-type: hnsw
+        distance-type: cosine_distance
+        dimensions: 768
 logging:
   level:
     root: INFO
