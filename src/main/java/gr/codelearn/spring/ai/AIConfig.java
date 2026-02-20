@@ -1,12 +1,17 @@
 package gr.codelearn.spring.ai;
 
 import io.netty.channel.ChannelOption;
+import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -19,8 +24,14 @@ import reactor.netty.resources.ConnectionProvider;
 import javax.sql.DataSource;
 import java.time.Duration;
 
+@RequiredArgsConstructor
 @Configuration
 public class AIConfig {
+	// In case we inject VectorStore, there will be circular dependency issue.
+	private final ObjectProvider<VectorStore> vectorStoreProvider;
+
+	public static final String KB_ID = "quickbite-food-delivery";
+
 	@Bean
 	public ChatClient moviesChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
 		return chatClientBuilder
@@ -43,6 +54,36 @@ public class AIConfig {
 							   When asked for a list of things, use a numbered list.
 							   """)
 				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+				.build();
+	}
+
+	@Bean
+	public ChatClient foodChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
+		return chatClientBuilder
+				.defaultSystem("""
+							   You are QuickBite Support Assistant.
+							   You are expert in food delivery.
+							   Use ONLY the provided context to answer.
+							   If the answer is not in the context, say you don’t know and ask a clarifying question.
+							   Always cite the section/source from the context when possible.
+							   Keep answers concise and actionable.
+							   """)
+				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build(),
+								 QuestionAnswerAdvisor.builder(vectorStoreProvider.getObject())
+													  .searchRequest(SearchRequest.builder()
+																				  // Query is provided at runtime from the user's message
+																				  // by the advisor;
+																				  // some versions still require a non-null query in the
+																				  // object, so keep it empty.
+																				  .query("")
+																				  .similarityThreshold(0.3)
+																				  // Add a filter expression to only retrieve documents
+																				  // related to the QuickBite food delivery service.
+																				  .topK(10)
+																				  .filterExpression("kb == '" + KB_ID + "'")
+																				  .build())
+
+													  .build())
 				.build();
 	}
 

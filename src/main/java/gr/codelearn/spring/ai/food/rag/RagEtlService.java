@@ -23,13 +23,14 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static gr.codelearn.spring.ai.AIConfig.KB_ID;
+
 @RequiredArgsConstructor
 @Slf4j
 @Service
 public class RagEtlService {
 	private static final Pattern HEADING = Pattern.compile("(?m)^(#{1,6})\\s+(.*)\\s*$");
 
-	private static final String KB_ID = "quickbite-food-delivery";
 	private static final String MD_GLOB = "classpath*:rag/docs/*.md";
 	private static final String PDF_GLOB = "classpath*:rag/docs/*.pdf";
 

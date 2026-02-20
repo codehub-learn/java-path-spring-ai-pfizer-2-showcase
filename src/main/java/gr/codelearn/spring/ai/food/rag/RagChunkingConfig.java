@@ -13,7 +13,7 @@ public class RagChunkingConfig {
 	public TextSplitter tokenSplitter() {
 		// Spring AI 2.0.0-M2 requires punctuationMarks as List<Character>.
 		// These help the splitter choose better breakpoints when chunking long text.
-		List<Character> punctuationMarks = List.of('.', '!', '?', '\n');
+		List<Character> punctuationMarks = List.of('.', '!', '?', ';', '\n');
 
 		return new TokenTextSplitter(
 				450,   // chunkSize (tokens target)

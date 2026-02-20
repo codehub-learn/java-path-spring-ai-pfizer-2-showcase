@@ -34,7 +34,7 @@ spring:
         max-retries: 0
       chat:
         options:
-          model: phi3:14b
+          model: llama3.2:3b
           num-ctx: 4096 # input context window
           num-predict: 256 # max generated tokens
           temperature: 0.7
