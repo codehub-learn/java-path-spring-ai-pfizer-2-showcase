@@ -35,8 +35,7 @@ public class AIConfig {
 	}
 
 	@Bean
-	@Primary
-	public ChatClient ChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
+	public ChatClient sportsChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
 		return chatClientBuilder
 				.defaultSystem("""
 							   You are a helpful CLI assistant. You are expert in sports.

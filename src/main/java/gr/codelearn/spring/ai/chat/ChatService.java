@@ -8,6 +8,7 @@ import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -16,11 +17,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class ChatService {
-	private final ChatClient chatClient;
+	@Qualifier("sportsChatClient")
+	private final ChatClient sportsChatClient;
 	private final ChatMemoryRepository chatMemoryRepository;
 
 	public Flux<String> ask(final Key key, String question) {
-		return chatClient
+		return sportsChatClient
 				.prompt()
 				.advisors(a -> a.param(ChatMemory.CONVERSATION_ID, key.toString()))
 				.user(question)
