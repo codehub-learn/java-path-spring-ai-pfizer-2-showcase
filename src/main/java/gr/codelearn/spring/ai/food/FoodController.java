@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,7 @@ public class FoodController {
 	}
 
 	@GetMapping(params = {"qu"})
-	public Flux<String> ask(@PathVariable String tenant, @PathVariable String user, @RequestParam("qu") String question) {
+	public Answer ask(@PathVariable String tenant, @PathVariable String user, @RequestParam("qu") String question) {
 		return foodService.ask(question, new Key(tenant, user, "food_ordering"));
 	}
 
