@@ -31,7 +31,8 @@ public class ChatController {
 	}
 
 	@GetMapping(headers = "x-conversation-id", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<ChatMessageDto> messages(@PathVariable String tenant, @PathVariable String user, @PathVariable String conversationId) {
+	public List<ChatMessageDto> messages(@PathVariable String tenant, @PathVariable String user,
+										 @RequestHeader("x-conversation-id") String conversationId) {
 		return chatService.getConversation(new Key(tenant, user, conversationId));
 	}
 
