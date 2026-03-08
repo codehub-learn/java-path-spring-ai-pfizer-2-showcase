@@ -3,11 +3,72 @@ spring:
     name: spring-ai-demo
   main:
     banner-mode: off
+  sql:
+    init:
+      mode: always
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred #If you have many repositories, consider using deferred repository initialization:
+        enabled: true
   datasource:
     driver-class-name: org.postgresql.Driver
+    hikari:
+      # needs to be set to true for Spring AI to work (vector store, chat memory etc)
+      auto-commit: true
+      connection-test-query: select 1
+      connection-timeout: 10000
+      idle-timeout: 60000
+      max-lifetime: 1800000
+      maximum-pool-size: 50
+      minimum-idle: 1
+      pool-name: tomConnectionPooling
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+      username: ${postgres.user:postgres}
+      password: ${postgres.password:postgres}
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 512
+        prepStmtCacheSqlLimit: 2048
+        #serverTimezone: UTC # defaults to JVM setting either explicitly set or inherited from OS
+    type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:postgresql://${postgres.host:localhost}:${postgres.port:5432}/${postgres.db:spring-ai-demo}?reWriteBatchedInserts=true
-    username: ${postgres.user:postgres}
-    password: ${postgres.password:postgres}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    open-in-view: false
+    properties:
+      hibernate:
+        batch_versioned_data: true
+        check_nullability: false
+        connection:
+          # Sources
+          # https://vladmihalcea.com/spring-transaction-connection-management
+          # https://vladmihalcea.com/why-you-should-always-use-hibernate-connection-provider_disables_autocommit-for-resource-local-jpa-transactions/
+          # handling_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_STATEMENT
+          provider_disables_autocommit: true
+        jdbc:
+          batch_size: 100
+        format_sql: true
+        order_inserts: true
+        order_updates: true
+        query:
+          in_clause_parameter_padding: true
+          # Disable query validation at startup
+          startup_check: false
+          # Every JPQL query or Criteria query is parsed into an Abstract Syntax Tree (AST) prior to execution so that Hibernate can generate the SQL statement
+          plan_cache_max_size: 4096
+          plan_parameter_metadata_max_size: 512
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 1000
+    show-sql: true
   ai:
     #    openai:
     #      api-key: ${OPENAI_API_KEY}
@@ -54,15 +115,22 @@ spring:
         repository:
           jdbc:
             initialize-schema: always
-            schema: classpath:schema.sql
+            schema: classpath:memory-schema.sql
     vectorstore:
       pgvector:
-        initialize-schema: true
+        initialize-schema: false
         schema-name: public
         table-name: vector_store
         index-type: hnsw
         distance-type: cosine_distance
         dimensions: 768
+        schema-validation: true
+  threads:
+    virtual:
+      enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 1m
+
 logging:
   level:
     root: INFO

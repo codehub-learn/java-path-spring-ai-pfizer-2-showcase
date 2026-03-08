@@ -1,5 +1,6 @@
 package gr.codelearn.spring.ai;
 
+import gr.codelearn.spring.ai.food.catalog.StoreCatalogService;
 import io.netty.channel.ChannelOption;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
@@ -29,6 +30,7 @@ import java.time.Duration;
 public class AIConfig {
 	// In case we inject VectorStore, there will be circular dependency issue.
 	private final ObjectProvider<VectorStore> vectorStoreProvider;
+	private final StoreCatalogService storeCatalogService;
 
 	public static final String KB_ID = "quickbite-food-delivery";
 
@@ -63,7 +65,8 @@ public class AIConfig {
 				.defaultSystem("""
 							   You are QuickBite Support Assistant.
 							   You are expert in food delivery.
-							   Use ONLY the provided context to answer.
+							   Use ONLY the provided context to answer policy/support questions.
+							   Use the available tools whenever the user asks about stores, menus, type of cuisine and anything related to specific food options.
 							   If the answer is not in the context, say you don’t know and ask a clarifying question.
 							   Always cite the section/source from the context when possible.
 							   Keep answers concise and actionable.
@@ -82,8 +85,8 @@ public class AIConfig {
 																				  .topK(10)
 																				  .filterExpression("kb == '" + KB_ID + "'")
 																				  .build())
-
 													  .build())
+				.defaultTools(storeCatalogService)
 				.build();
 	}
 

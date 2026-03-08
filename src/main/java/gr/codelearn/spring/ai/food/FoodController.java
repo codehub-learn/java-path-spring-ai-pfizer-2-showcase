@@ -1,6 +1,9 @@
 package gr.codelearn.spring.ai.food;
 
 import gr.codelearn.spring.ai.Key;
+import gr.codelearn.spring.ai.food.catalog.StoreCatalogService;
+import gr.codelearn.spring.ai.food.catalog.StoreMenuResource;
+import gr.codelearn.spring.ai.food.catalog.StoreSummaryResource;
 import gr.codelearn.spring.ai.food.rag.RagEtlService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.document.Document;
@@ -20,6 +23,7 @@ import java.util.Map;
 public class FoodController {
 	private final RagEtlService etlService;
 	private final FoodService foodService;
+	private final StoreCatalogService storeCatalogService;
 
 	@PostMapping(headers = "x-reindex")
 	public RagEtlService.EtlResult reIndex() throws Exception {
@@ -39,6 +43,16 @@ public class FoodController {
 	@GetMapping(params = {"qu"})
 	public Answer ask(@PathVariable String tenant, @PathVariable String user, @RequestParam("qu") String question) {
 		return foodService.ask(question, new Key(tenant, user, "food_ordering"));
+	}
+
+	@GetMapping(path = "/stores", params = "q")
+	public List<StoreSummaryResource> findStores(@RequestParam("q") String query) {
+		return storeCatalogService.findStores(query);
+	}
+
+	@GetMapping(path = "/stores/{storeId}/menu")
+	public StoreMenuResource getStoreMenu(@PathVariable String storeId) {
+		return storeCatalogService.getStoreMenu(storeId);
 	}
 
 	private String preview(String s, int max) {
