@@ -6,5 +6,6 @@ public record Answer(String answer,
 					 Integer promptTokens,
 					 Integer completionTokens,
 					 Integer totalTokens,
+					 Long responseTimeMs,
 					 Map<String, Object> modelMetadata) {
 }

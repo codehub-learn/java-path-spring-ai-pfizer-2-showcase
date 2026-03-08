@@ -7,6 +7,8 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -16,6 +18,7 @@ public class FoodService {
 	private final ChatClient foodChatClient;
 
 	public Answer ask(String question, final Key key) {
+		var start = Instant.now();
 		var chatResponse = foodChatClient.prompt()
 										 .user(question)
 										 // Adds data to the advisor context
@@ -28,6 +31,7 @@ public class FoodService {
 						  chatResponse.getMetadata().getUsage().getPromptTokens(),
 						  chatResponse.getMetadata().getUsage().getCompletionTokens(),
 						  chatResponse.getMetadata().getUsage().getTotalTokens(),
+						  Duration.between(start, Instant.now()).toMillis(),
 						  chatResponse.getResult().getOutput().getMetadata());
 	}
 }
