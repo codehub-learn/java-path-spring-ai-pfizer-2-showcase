@@ -18,18 +18,28 @@ public class FoodIntentRouter {
 			"find store", "find stores",
 			"show store", "show stores",
 			"list store", "list stores",
+			"offer", "offers",
+			"have", "has",
+			"find", "show", "list",
+			"where can i order",
 			"what can i order",
-			"what restaurants",
+			"which store",
+			"which stores",
+			"which restaurant",
 			"which restaurants",
-			"which stores"
-														   );
+			"coffee", "drink", "drinks",
+			"nigiri", "roll", "rolls", "maki",
+			"churros", "tiramisu", "brownie", "cheesecake",
+			"burrito", "burritos",
+			"fries", "wings", "wrap", "wraps",
+			"italian", "japanese", "mexican", "american", "healthy", "vegan");
 
 	private static final Set<String> SUPPORT_HINTS = Set.of(
-			"service name",
-			"quickbite",
+			"service name", "service", "guide",
 			"policy", "policies",
 			"support",
-			"delivery",
+			"delivery policy",
+			"delivery partner",
 			"partner", "partners",
 			"courier", "couriers",
 			"refund", "refunds",
@@ -42,8 +52,10 @@ public class FoodIntentRouter {
 			"what happens",
 			"failed delivery",
 			"customer unavailable",
-			"process"
-														   );
+			"operational",
+			"operations",
+			"procedure", "procedures",
+			"process", "order", "ordering");
 
 	public FoodIntent classify(String question) {
 		if (!StringUtils.hasText(question)) {
@@ -52,7 +64,7 @@ public class FoodIntentRouter {
 
 		String normalized = normalize(question);
 
-		boolean catalog = containsAny(normalized, CATALOG_HINTS);
+		boolean catalog = containsAny(normalized, CATALOG_HINTS) || looksLikeCatalogDiscovery(normalized);
 		boolean support = containsAny(normalized, SUPPORT_HINTS);
 
 		if (catalog && support) {
@@ -62,6 +74,32 @@ public class FoodIntentRouter {
 			return FoodIntent.CATALOG;
 		}
 		return FoodIntent.SUPPORT;
+	}
+
+	private boolean looksLikeCatalogDiscovery(String text) {
+		boolean asksForStores = text.contains("store") || text.contains("stores")
+								|| text.contains("restaurant") || text.contains("restaurants")
+								|| text.contains("menu");
+
+		boolean asksForFoodMatching = text.contains("serving")
+									  || text.contains("serve")
+									  || text.contains("have")
+									  || text.contains("has")
+									  || text.contains("offer")
+									  || text.contains("offers");
+
+		boolean mentionsFoodishTerm = text.contains("sushi")
+									  || text.contains("pizza")
+									  || text.contains("burger")
+									  || text.contains("taco")
+									  || text.contains("pasta")
+									  || text.contains("dessert")
+									  || text.contains("drink")
+									  || text.contains("tiramisu")
+									  || text.contains("nigiri")
+									  || text.contains("burrito");
+
+		return asksForStores || (asksForFoodMatching && mentionsFoodishTerm);
 	}
 
 	private boolean containsAny(String text, Set<String> hints) {
