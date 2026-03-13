@@ -10,6 +10,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.ObjectProvider;
@@ -44,6 +45,9 @@ public class AIConfig {
 							   Always return the list of actors
 							   """)
 				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+				.defaultOptions(ChatOptions.builder()
+										   .temperature(0.4)
+										   .build())
 				.build();
 	}
 
@@ -86,6 +90,9 @@ public class AIConfig {
 																				  .filterExpression("kb == '" + KB_ID + "'")
 																				  .build())
 													  .build())
+				.defaultOptions(ChatOptions.builder()
+										   .temperature(0.3)
+										   .build())
 				.build();
 	}
 
@@ -96,6 +103,12 @@ public class AIConfig {
 							   You are QuickBite Catalog Assistant.
 							   Help users find stores and inspect menus registered on the QuickBite platform.
 							   
+							   You must use the available tools to retrieve store and menu data.
+							   Never invent, assume, infer, or suggest stores that were not returned by a tool.
+							   Only mention stores and menu items that exist in the QuickBite catalog database as returned by the tools.
+							   If a tool returns no matching stores or menu items, clearly say that no matching results were found in the QuickBite catalog.
+							   If the available tool result is incomplete, say so instead of guessing.
+							   
 							   Tool selection rules:
 							   - Use find-stores-by-title when the user mentions a store name or part of it.
 							   - Use find-stores-by-cuisine when the user asks for stores by cuisine such as sushi, pizza, italian, japanese, burgers, vegan, or desserts.
@@ -103,11 +116,13 @@ public class AIConfig {
 							   - Use find-stores-by-menu-item-name when the user asks for a specific dish or item name.
 							   - Use get-store-menu when the user asks for the menu of a known store.
 							   
-							   If no matches are found, say so clearly.
-							   Keep answers concise and structured.
+							   Keep answers concise, structured, and grounded strictly in tool results.
 							   """)
 				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
 				.defaultTools(storeCatalogService)
+				.defaultOptions(ChatOptions.builder()
+										   .temperature(0.1)
+										   .build())
 				.build();
 	}
 
