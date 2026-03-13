@@ -18,7 +18,9 @@ public class StoreCatalogService {
 	private final StoreRepository storeRepository;
 
 	@Tool(name = "find-stores-by-title",
-		  description = "Find QuickBite stores by full or partial store title. Example inputs: Pizza, Sakura, Burger.")
+		  description =
+				  "Find QuickBite stores by full or partial store title. Use this when the user mentions a store name or part of it," +
+				  " for example Pizza, Sakura, Burger, Tokyo.")
 	public List<StoreSummaryResource> findStoresByTitle(String title) {
 		log.debug("StoreCatalogService.findStoresByTitle called with title '{}'.", title);
 		List<Store> stores = StringUtils.hasText(title)
@@ -31,8 +33,8 @@ public class StoreCatalogService {
 	}
 
 	@Tool(name = "find-stores-by-cuisine",
-		  description = "Find QuickBite stores by cuisine. Use the Cuisine enum value, for example SUSHI, PIZZA, ITALIAN, JAPANESE, " +
-						"BURGERS.")
+		  description = "Find QuickBite stores by cuisine. Use this for requests such as sushi, japanese, pizza, italian, burgers, " +
+						"mexican, vegan, or desserts. The input must be a Cuisine enum value.")
 	public List<StoreSummaryResource> findStoresByCuisine(Cuisine cuisine) {
 		log.debug("StoreCatalogService.findStoresByCuisine called with cuisine '{}'.", cuisine);
 		return storeRepository.findByCuisineOrderByNameAsc(cuisine)
@@ -42,8 +44,8 @@ public class StoreCatalogService {
 	}
 
 	@Tool(name = "find-stores-by-menu-item-category",
-		  description = "Find QuickBite stores by menu item category. Use the MenuItemCategory enum value, for example SUSHI, PIZZA, " +
-						"BURGERS, DESSERTS, DRINKS.")
+		  description = "Find QuickBite stores by menu item category. Use this when the user asks for stores serving a category such as " +
+						"SUSHI, PIZZA, BURGERS, DESSERTS, DRINKS, TACOS, or PASTA. The input must be a MenuItemCategory enum value.")
 	public List<StoreSummaryResource> findStoresByMenuItemCategory(MenuItemCategory category) {
 		log.debug("StoreCatalogService.findStoresByMenuItemCategory called with category '{}'.", category);
 		return storeRepository.findByMenuItemCategoryOrderByNameAsc(category)
@@ -53,7 +55,9 @@ public class StoreCatalogService {
 	}
 
 	@Tool(name = "find-stores-by-menu-item-name",
-		  description = "Find QuickBite stores by full or partial menu item name. Example inputs: nigiri, pepperoni, churros, tiramisu.")
+		  description = "Find QuickBite stores by full or partial menu item name. Use this for specific dishes such as nigiri, tiramisu," +
+						" " +
+						"churros, pepperoni, brownie, burrito, or mochi.")
 	public List<StoreSummaryResource> findStoresByMenuItemName(String itemName) {
 		log.debug("StoreCatalogService.findStoresByMenuItemName called with itemName '{}'.", itemName);
 		if (!StringUtils.hasText(itemName)) {
