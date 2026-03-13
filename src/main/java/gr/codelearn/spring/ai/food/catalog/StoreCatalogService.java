@@ -42,7 +42,12 @@ public class StoreCatalogService {
 	@Tool(name = "find-stores-by-cuisine",
 		  description = "Find QuickBite stores by cuisine. Use this for requests such as sushi, japanese, pizza, italian, burgers, " +
 						"mexican, vegan, or desserts. The input must be a Cuisine enum value.")
-	public List<StoreSummaryResource> findStoresByCuisine(Cuisine cuisine) {
+	public List<StoreSummaryResource> findStoresByCuisine(String cuisine) {
+		Cuisine parsedCuisine = Cuisine.fromUserValue(cuisine);
+		return findStoresByCuisine(parsedCuisine);
+	}
+
+	private List<StoreSummaryResource> findStoresByCuisine(Cuisine cuisine) {
 		log.debug("StoreCatalogService.findStoresByCuisine called with cuisine '{}'.", cuisine);
 		try {
 			return storeRepository.findByCuisineOrderByNameAsc(cuisine)
@@ -57,7 +62,12 @@ public class StoreCatalogService {
 	@Tool(name = "find-stores-by-menu-item-category",
 		  description = "Find QuickBite stores by menu item category. Use this when the user asks for stores serving a category such as " +
 						"SUSHI, PIZZA, BURGERS, DESSERTS, DRINKS, TACOS, or PASTA. The input must be a MenuItemCategory enum value.")
-	public List<StoreSummaryResource> findStoresByMenuItemCategory(MenuItemCategory category) {
+	public List<StoreSummaryResource> findStoresByMenuItemCategory(String category) {
+		MenuItemCategory parsedCategory = MenuItemCategory.fromUserValue(category);
+		return findStoresByMenuItemCategory(parsedCategory);
+	}
+
+	private List<StoreSummaryResource> findStoresByMenuItemCategory(MenuItemCategory category) {
 		log.debug("StoreCatalogService.findStoresByMenuItemCategory called with category '{}'.", category);
 		try {
 			return storeRepository.findByMenuItemCategoryOrderByNameAsc(category)

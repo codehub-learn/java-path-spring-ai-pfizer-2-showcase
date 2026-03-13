@@ -37,13 +37,28 @@ public class FoodService {
 												 
 												 Catalog routing hint: %s
 												 
-												 Tool selection guidance:
-												 - TITLE -> use find-stores-by-title
-												 - CUISINE -> use find-stores-by-cuisine
-												 - CATEGORY -> use find-stores-by-menu-item-category
-												 - ITEM_NAME -> use find-stores-by-menu-item-name
-												 - STORE_MENU -> use get-store-menu
-												 - GENERIC -> choose the most relevant catalog tool
+												  Tool selection guidance:
+												  - TITLE -> use find-stores-by-title
+												  - CUISINE -> use find-stores-by-cuisine
+												  - CATEGORY -> use find-stores-by-menu-item-category
+												  - ITEM_NAME -> use find-stores-by-menu-item-name
+												  - STORE_MENU -> use get-store-menu
+												  - GENERIC -> choose the most relevant catalog tool
+												 
+												  Tool argument rules:
+												  - When a tool expects an enum value, you must use the exact enum constant name expected by Java.
+												  - Cuisine values must be uppercase enum names such as: %s
+												  - Menu item category values must be uppercase enum names such as: %s
+												  - Never use lowercase enum values like "italian"; use "ITALIAN" instead.
+												  - If you are unsure about the exact enum value, prefer another tool or ask for clarification rather than guessing.
+												 
+												  Grounding rules:
+												  - You must use the available tools to retrieve catalog data.
+												  - Return only stores and menu items actually returned by the tools.
+												  - Do not invent, assume, infer, complete, or suggest store names that were not returned.
+												  - Do not use general world knowledge for stores or menus.
+												  - If no matching stores are returned, say: "No matching stores were found in the QuickBite catalog."
+												  - If no matching menu items are returned, say that clearly and do not guess.
 												 
 												 User question: %s
 												 """;

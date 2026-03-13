@@ -15,5 +15,21 @@ public enum Cuisine {
 	MEXICAN,
 	PIZZA,
 	SUSHI,
-	VEGAN
+	VEGAN;
+
+	public static Cuisine fromUserValue(String value) {
+		if (value == null || value.isBlank()) {
+			throw new IllegalArgumentException("Cuisine value must not be blank");
+		}
+
+		String normalized = value.trim()
+								 .toUpperCase(java.util.Locale.ROOT)
+								 .replace('-', '_')
+								 .replace(' ', '_');
+
+		return java.util.Arrays.stream(values())
+							   .filter(c -> c.name().equals(normalized))
+							   .findFirst()
+							   .orElseThrow(() -> new IllegalArgumentException("Unknown cuisine: " + value));
+	}
 }
