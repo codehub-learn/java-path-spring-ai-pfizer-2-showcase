@@ -4,6 +4,7 @@ import gr.codelearn.spring.ai.Key;
 import gr.codelearn.spring.ai.food.catalog.Cuisine;
 import gr.codelearn.spring.ai.food.catalog.MenuItemCategory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -20,6 +21,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class FoodService {
@@ -57,18 +59,89 @@ public class FoodService {
 
 	public Answer ask(String question, Key key) {
 		Instant startedAt = Instant.now();
-		FoodIntent intent = foodIntentRouter.classify(question);
 
-		return switch (intent) {
-			case SUPPORT -> toAnswer(call(foodSupportChatClient, SUPPORT_PROMPT.formatted(question), key), elapsedMillis(startedAt));
-			case CATALOG -> toAnswer(call(foodCatalogChatClient, catalogPrompt(question), key), elapsedMillis(startedAt));
-			case BOTH -> {
-				ChatResponse supportResponse = call(foodSupportChatClient, SUPPORT_PROMPT.formatted(question), key);
-				ChatResponse catalogResponse = call(foodCatalogChatClient, catalogPrompt(question), key);
+		try {
+			FoodIntent intent = foodIntentRouter.classify(question);
 
-				yield combineAnswers(supportResponse, catalogResponse, elapsedMillis(startedAt));
-			}
-		};
+			return switch (intent) {
+				case SUPPORT -> toAnswer(
+						call(foodSupportChatClient, SUPPORT_PROMPT.formatted(question), key),
+						elapsedMillis(startedAt)
+										);
+				case CATALOG -> toAnswer(
+						call(foodCatalogChatClient, catalogPrompt(question), key),
+						elapsedMillis(startedAt)
+										);
+				case BOTH -> askBoth(question, key, startedAt);
+			};
+		} catch (Exception e) {
+			log.error("FoodService.ask failed for question='{}'.", question, e);
+			return errorAnswer(
+					"Sorry, I could not process your request right now. Please try again.",
+					elapsedMillis(startedAt),
+					Map.of("error", e.getClass().getSimpleName())
+							  );
+		}
+	}
+
+	private Answer askBoth(String question, Key key, Instant startedAt) {
+		ChatResponse supportResponse = null;
+		ChatResponse catalogResponse = null;
+		Exception supportError = null;
+		Exception catalogError = null;
+
+		try {
+			supportResponse = call(foodSupportChatClient, SUPPORT_PROMPT.formatted(question), key);
+		} catch (Exception e) {
+			supportError = e;
+			log.warn("Support branch failed for question='{}'.", question, e);
+		}
+
+		try {
+			catalogResponse = call(foodCatalogChatClient, catalogPrompt(question), key);
+		} catch (Exception e) {
+			catalogError = e;
+			log.warn("Catalog branch failed for question='{}'.", question, e);
+		}
+
+		long responseTimeMs = elapsedMillis(startedAt);
+
+		if (supportResponse != null && catalogResponse != null) {
+			return combineAnswers(supportResponse, catalogResponse, responseTimeMs);
+		}
+
+		if (supportResponse != null) {
+			Answer answer = toAnswer(supportResponse, responseTimeMs);
+			return new Answer(
+					answer.answer() + "\n\nCatalog information could not be retrieved at the moment.",
+					answer.promptTokens(),
+					answer.completionTokens(),
+					answer.totalTokens(),
+					answer.responseTimeMs(),
+					appendErrorMetadata(answer.modelMetadata(), "catalog", catalogError)
+			);
+		}
+
+		if (catalogResponse != null) {
+			Answer answer = toAnswer(catalogResponse, responseTimeMs);
+			return new Answer(
+					"Support information could not be retrieved at the moment.\n\n" + answer.answer(),
+					answer.promptTokens(),
+					answer.completionTokens(),
+					answer.totalTokens(),
+					answer.responseTimeMs(),
+					appendErrorMetadata(answer.modelMetadata(), "support", supportError)
+			);
+		}
+
+		return errorAnswer(
+				"Sorry, I could not retrieve either support or catalog information right now. Please try again.",
+				responseTimeMs,
+				Map.of(
+						"supportError", errorName(supportError),
+						"catalogError", errorName(catalogError)
+					  )
+						  );
 	}
 
 	private String catalogPrompt(String question) {
@@ -214,6 +287,30 @@ public class FoodService {
 
 	private long elapsedMillis(Instant startedAt) {
 		return Duration.between(startedAt, Instant.now()).toMillis();
+	}
+
+	private Answer errorAnswer(String message, long responseTimeMs, Map<String, Object> metadata) {
+		return new Answer(
+				message,
+				0,
+				0,
+				0,
+				responseTimeMs,
+				metadata
+		);
+	}
+
+	private Map<String, Object> appendErrorMetadata(Map<String, Object> metadata, String branch, Exception error) {
+		Map<String, Object> enriched = new LinkedHashMap<>();
+		if (metadata != null) {
+			enriched.putAll(metadata);
+		}
+		enriched.put(branch + "Error", errorName(error));
+		return enriched;
+	}
+
+	private String errorName(Exception error) {
+		return error == null ? null : error.getClass().getSimpleName();
 	}
 
 	private enum CatalogSearchMode {

@@ -1,8 +1,11 @@
 package gr.codelearn.spring.ai.food.catalog;
 
+import gr.codelearn.spring.ai.food.exception.CatalogQueryException;
+import gr.codelearn.spring.ai.food.exception.StoreNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -23,13 +26,17 @@ public class StoreCatalogService {
 				  " for example Pizza, Sakura, Burger, Tokyo.")
 	public List<StoreSummaryResource> findStoresByTitle(String title) {
 		log.debug("StoreCatalogService.findStoresByTitle called with title '{}'.", title);
-		List<Store> stores = StringUtils.hasText(title)
-							 ? storeRepository.findByNameContainingIgnoreCaseOrderByNameAsc(title.trim())
-							 : storeRepository.findAllByOrderByNameAsc();
+		try {
+			List<Store> stores = StringUtils.hasText(title)
+								 ? storeRepository.findByNameContainingIgnoreCaseOrderByNameAsc(title.trim())
+								 : storeRepository.findAllByOrderByNameAsc();
 
-		return stores.stream()
-					 .map(this::toSummaryResource)
-					 .toList();
+			return stores.stream()
+						 .map(this::toSummaryResource)
+						 .toList();
+		} catch (DataAccessException e) {
+			throw new CatalogQueryException("Failed to search stores by title.", e);
+		}
 	}
 
 	@Tool(name = "find-stores-by-cuisine",
@@ -37,10 +44,14 @@ public class StoreCatalogService {
 						"mexican, vegan, or desserts. The input must be a Cuisine enum value.")
 	public List<StoreSummaryResource> findStoresByCuisine(Cuisine cuisine) {
 		log.debug("StoreCatalogService.findStoresByCuisine called with cuisine '{}'.", cuisine);
-		return storeRepository.findByCuisineOrderByNameAsc(cuisine)
-							  .stream()
-							  .map(this::toSummaryResource)
-							  .toList();
+		try {
+			return storeRepository.findByCuisineOrderByNameAsc(cuisine)
+								  .stream()
+								  .map(this::toSummaryResource)
+								  .toList();
+		} catch (DataAccessException e) {
+			throw new CatalogQueryException("Failed to search stores by cuisine.", e);
+		}
 	}
 
 	@Tool(name = "find-stores-by-menu-item-category",
@@ -48,10 +59,14 @@ public class StoreCatalogService {
 						"SUSHI, PIZZA, BURGERS, DESSERTS, DRINKS, TACOS, or PASTA. The input must be a MenuItemCategory enum value.")
 	public List<StoreSummaryResource> findStoresByMenuItemCategory(MenuItemCategory category) {
 		log.debug("StoreCatalogService.findStoresByMenuItemCategory called with category '{}'.", category);
-		return storeRepository.findByMenuItemCategoryOrderByNameAsc(category)
-							  .stream()
-							  .map(this::toSummaryResource)
-							  .toList();
+		try {
+			return storeRepository.findByMenuItemCategoryOrderByNameAsc(category)
+								  .stream()
+								  .map(this::toSummaryResource)
+								  .toList();
+		} catch (DataAccessException e) {
+			throw new CatalogQueryException("Failed to search stores by menu item category.", e);
+		}
 	}
 
 	@Tool(name = "find-stores-by-menu-item-name",
@@ -64,19 +79,27 @@ public class StoreCatalogService {
 			return List.of();
 		}
 
-		return storeRepository.findByMenuItemNameContainingIgnoreCaseOrderByNameAsc(itemName.trim())
-							  .stream()
-							  .map(this::toSummaryResource)
-							  .toList();
+		try {
+			return storeRepository.findByMenuItemNameContainingIgnoreCaseOrderByNameAsc(itemName.trim())
+								  .stream()
+								  .map(this::toSummaryResource)
+								  .toList();
+		} catch (DataAccessException e) {
+			throw new CatalogQueryException("Failed to search stores by menu item name.", e);
+		}
 	}
 
 	@Tool(name = "get-store-menu",
 		  description = "Get the full menu for a specific QuickBite store using its storeId.")
 	public StoreMenuResource getStoreMenu(String storeId) {
 		log.debug("StoreCatalogService.getStoreMenu called with storeId '{}'.", storeId);
-		Store store = storeRepository.findWithStoreMenuById(storeId)
-									 .orElseThrow(() -> new IllegalArgumentException("Unknown storeId: " + storeId));
-		return toStoreMenuResource(store);
+		try {
+			Store store = storeRepository.findWithStoreMenuById(storeId)
+										 .orElseThrow(() -> new StoreNotFoundException(storeId));
+			return toStoreMenuResource(store);
+		} catch (DataAccessException e) {
+			throw new CatalogQueryException("Failed to get store menu.", e);
+		}
 	}
 
 	private StoreSummaryResource toSummaryResource(Store store) {
