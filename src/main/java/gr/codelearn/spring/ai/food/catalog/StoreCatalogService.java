@@ -1,6 +1,7 @@
 package gr.codelearn.spring.ai.food.catalog;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +10,7 @@ import org.springframework.util.StringUtils;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
@@ -18,6 +20,7 @@ public class StoreCatalogService {
 	@Tool(name = "find-stores-by-title",
 		  description = "Find QuickBite stores by full or partial store title. Example inputs: Pizza, Sakura, Burger.")
 	public List<StoreSummaryResource> findStoresByTitle(String title) {
+		log.debug("StoreCatalogService.findStoresByTitle called with title '{}'.", title);
 		List<Store> stores = StringUtils.hasText(title)
 							 ? storeRepository.findByNameContainingIgnoreCaseOrderByNameAsc(title.trim())
 							 : storeRepository.findAllByOrderByNameAsc();
@@ -31,6 +34,7 @@ public class StoreCatalogService {
 		  description = "Find QuickBite stores by cuisine. Use the Cuisine enum value, for example SUSHI, PIZZA, ITALIAN, JAPANESE, " +
 						"BURGERS.")
 	public List<StoreSummaryResource> findStoresByCuisine(Cuisine cuisine) {
+		log.debug("StoreCatalogService.findStoresByCuisine called with cuisine '{}'.", cuisine);
 		return storeRepository.findByCuisineOrderByNameAsc(cuisine)
 							  .stream()
 							  .map(this::toSummaryResource)
@@ -41,6 +45,7 @@ public class StoreCatalogService {
 		  description = "Find QuickBite stores by menu item category. Use the MenuItemCategory enum value, for example SUSHI, PIZZA, " +
 						"BURGERS, DESSERTS, DRINKS.")
 	public List<StoreSummaryResource> findStoresByMenuItemCategory(MenuItemCategory category) {
+		log.debug("StoreCatalogService.findStoresByMenuItemCategory called with category '{}'.", category);
 		return storeRepository.findByMenuItemCategoryOrderByNameAsc(category)
 							  .stream()
 							  .map(this::toSummaryResource)
@@ -50,6 +55,7 @@ public class StoreCatalogService {
 	@Tool(name = "find-stores-by-menu-item-name",
 		  description = "Find QuickBite stores by full or partial menu item name. Example inputs: nigiri, pepperoni, churros, tiramisu.")
 	public List<StoreSummaryResource> findStoresByMenuItemName(String itemName) {
+		log.debug("StoreCatalogService.findStoresByMenuItemName called with itemName '{}'.", itemName);
 		if (!StringUtils.hasText(itemName)) {
 			return List.of();
 		}
@@ -63,6 +69,7 @@ public class StoreCatalogService {
 	@Tool(name = "get-store-menu",
 		  description = "Get the full menu for a specific QuickBite store using its storeId.")
 	public StoreMenuResource getStoreMenu(String storeId) {
+		log.debug("StoreCatalogService.getStoreMenu called with storeId '{}'.", storeId);
 		Store store = storeRepository.findWithStoreMenuById(storeId)
 									 .orElseThrow(() -> new IllegalArgumentException("Unknown storeId: " + storeId));
 		return toStoreMenuResource(store);
