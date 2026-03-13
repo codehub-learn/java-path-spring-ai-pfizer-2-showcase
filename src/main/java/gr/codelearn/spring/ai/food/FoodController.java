@@ -46,8 +46,8 @@ public class FoodController {
 	}
 
 	@GetMapping(path = "/stores", params = "q")
-	public List<StoreSummaryResource> findStores(@RequestParam("q") String query) {
-		return storeCatalogService.findStores(query);
+	public List<StoreSummaryResource> findStores(@RequestParam("title") String title) {
+		return storeCatalogService.findStoresByTitle(title);
 	}
 
 	@GetMapping(path = "/stores/{storeId}/menu")

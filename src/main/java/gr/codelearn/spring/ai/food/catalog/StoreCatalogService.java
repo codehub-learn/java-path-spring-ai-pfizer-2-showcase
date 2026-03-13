@@ -15,12 +15,11 @@ import java.util.List;
 public class StoreCatalogService {
 	private final StoreRepository storeRepository;
 
-	@Tool(name = "find-stores",
-		  description = "Find stores registered to QuickBite platform by title or part of the title. More than one store can match " +
-						"the given query.")
-	public List<StoreSummaryResource> findStores(String query) {
-		List<Store> stores = StringUtils.hasText(query)
-							 ? storeRepository.findByNameContainingIgnoreCaseOrderByNameAsc(query.trim())
+	@Tool(name = "find-stores-by-title",
+		  description = "Find QuickBite stores by full or partial store title. Example inputs: Pizza, Sakura, Burger.")
+	public List<StoreSummaryResource> findStoresByTitle(String title) {
+		List<Store> stores = StringUtils.hasText(title)
+							 ? storeRepository.findByNameContainingIgnoreCaseOrderByNameAsc(title.trim())
 							 : storeRepository.findAllByOrderByNameAsc();
 
 		return stores.stream()
@@ -28,8 +27,41 @@ public class StoreCatalogService {
 					 .toList();
 	}
 
-	@Tool(name = "get-stores-menu",
-		  description = "Get the full menu for a specific store registered to QuickBite platform using its storeId.")
+	@Tool(name = "find-stores-by-cuisine",
+		  description = "Find QuickBite stores by cuisine. Use the Cuisine enum value, for example SUSHI, PIZZA, ITALIAN, JAPANESE, " +
+						"BURGERS.")
+	public List<StoreSummaryResource> findStoresByCuisine(Cuisine cuisine) {
+		return storeRepository.findByCuisineOrderByNameAsc(cuisine)
+							  .stream()
+							  .map(this::toSummaryResource)
+							  .toList();
+	}
+
+	@Tool(name = "find-stores-by-menu-item-category",
+		  description = "Find QuickBite stores by menu item category. Use the MenuItemCategory enum value, for example SUSHI, PIZZA, " +
+						"BURGERS, DESSERTS, DRINKS.")
+	public List<StoreSummaryResource> findStoresByMenuItemCategory(MenuItemCategory category) {
+		return storeRepository.findByMenuItemCategoryOrderByNameAsc(category)
+							  .stream()
+							  .map(this::toSummaryResource)
+							  .toList();
+	}
+
+	@Tool(name = "find-stores-by-menu-item-name",
+		  description = "Find QuickBite stores by full or partial menu item name. Example inputs: nigiri, pepperoni, churros, tiramisu.")
+	public List<StoreSummaryResource> findStoresByMenuItemName(String itemName) {
+		if (!StringUtils.hasText(itemName)) {
+			return List.of();
+		}
+
+		return storeRepository.findByMenuItemNameContainingIgnoreCaseOrderByNameAsc(itemName.trim())
+							  .stream()
+							  .map(this::toSummaryResource)
+							  .toList();
+	}
+
+	@Tool(name = "get-store-menu",
+		  description = "Get the full menu for a specific QuickBite store using its storeId.")
 	public StoreMenuResource getStoreMenu(String storeId) {
 		Store store = storeRepository.findWithStoreMenuById(storeId)
 									 .orElseThrow(() -> new IllegalArgumentException("Unknown storeId: " + storeId));

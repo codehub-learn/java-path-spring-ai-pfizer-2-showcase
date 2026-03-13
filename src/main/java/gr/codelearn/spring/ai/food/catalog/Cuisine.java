@@ -6,6 +6,7 @@ public enum Cuisine {
 	BURGERS,
 	CHINESE,
 	DESSERTS,
+	GREEK,
 	HEALTHY,
 	INDIAN,
 	ITALIAN,

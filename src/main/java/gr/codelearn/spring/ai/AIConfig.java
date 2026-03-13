@@ -60,14 +60,14 @@ public class AIConfig {
 	}
 
 	@Bean
-	public ChatClient foodChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
+	public ChatClient foodSupportChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
 		return chatClientBuilder
 				.defaultSystem("""
 							   You are QuickBite Support Assistant.
-							   You are expert in food delivery.
-							   Use ONLY the provided context to answer policy/support questions.
-							   Use the available tools whenever the user asks about stores, menus, type of cuisine and anything related to specific food options.
-							   If the answer is not in the context, say you don’t know and ask a clarifying question.
+							   You are expert in QuickBite food delivery support.
+							   Answer ONLY from the provided knowledge base context.
+							   Do NOT use tools.
+							   If the answer is not in the context, say you don't know and ask a clarifying question.
 							   Always cite the section/source from the context when possible.
 							   Keep answers concise and actionable.
 							   """)
@@ -86,6 +86,27 @@ public class AIConfig {
 																				  .filterExpression("kb == '" + KB_ID + "'")
 																				  .build())
 													  .build())
+				.build();
+	}
+
+	@Bean
+	public ChatClient foodCatalogChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
+		return chatClientBuilder
+				.defaultSystem("""
+							   You are QuickBite Catalog Assistant.
+							   Help users find stores and inspect menus registered on the QuickBite platform.
+							   
+							   Tool usage rules:
+							   - Use find-stores-by-title for store title queries.
+							   - Use find-stores-by-cuisine for cuisine-based requests such as sushi, pizza, italian, burgers, japanese.
+							   - Use find-stores-by-menu-item-category for category-based menu searches.
+							   - Use find-stores-by-menu-item-name for specific dish or item searches.
+							   - Use get-store-menu when the user asks for a specific store menu.
+							   
+							   If no matches are found, say so clearly.
+							   Keep answers concise and structured.
+							   """)
+				.defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
 				.defaultTools(storeCatalogService)
 				.build();
 	}
