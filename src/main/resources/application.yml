@@ -125,6 +125,18 @@ spring:
         distance-type: cosine_distance
         dimensions: 768
         schema-validation: true
+    mcp:
+      server:
+        enabled: true
+        type: sync
+        protocol: streamable
+        name: food-catalog-mcp
+        version: 1.0.0
+        annotation-scanner:
+          enabled: true
+        streamable-http:
+          mcp-endpoint: /mcp
+
   threads:
     virtual:
       enabled: true
@@ -139,3 +151,6 @@ logging:
     org.springframework.ai: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.web: DEBUG
+server:
+  address: 0.0.0.0 # Needed for Claude Desktop MCP Server registration to work
