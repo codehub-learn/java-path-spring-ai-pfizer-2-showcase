@@ -64,6 +64,19 @@ public class AIConfig {
 	}
 
 	@Bean
+	public ChatClient foodExtractionChatClient(ChatClient.Builder chatClientBuilder) {
+		return chatClientBuilder
+				.defaultSystem("""
+							   You extract structured fields from QuickBite user questions.
+							   Return only the requested structured output.
+							   Do not answer conversationally.
+							   Do not call tools.
+							   Do not invent values.
+							   """)
+				.build();
+	}
+
+	@Bean
 	public ChatClient foodSupportChatClient(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
 		return chatClientBuilder
 				.defaultSystem("""
