@@ -21,7 +21,7 @@ public class FoodCatalogMcpTools {
 			 description = "Find QuickBite stores by title or partial store name.")
 	public List<StoreSummaryResource> findStoresByTitle(
 			@McpToolParam(description = "Store title or partial store title") String title) {
-		log.debug("MCP tool find_stores_by_title called with title='{}'.", title);
+		log.trace("MCP tool find_stores_by_title called with title='{}'.", title);
 		return storeCatalogService.findStoresByTitle(title);
 	}
 
@@ -35,7 +35,7 @@ public class FoodCatalogMcpTools {
 			@McpToolParam(description = "Cuisine name such as JAPANESE, ITALIAN, MEXICAN, SUSHI, VEGAN, or DESSERTS")
 			String cuisine
 														 ) {
-		log.debug("MCP tool find_stores_by_cuisine called with cuisine='{}'.", cuisine);
+		log.trace("MCP tool find_stores_by_cuisine called with cuisine='{}'.", cuisine);
 		return storeCatalogService.findStoresByCuisine(cuisine);
 	}
 
@@ -47,7 +47,7 @@ public class FoodCatalogMcpTools {
 			@McpToolParam(description = "Menu item category value")
 			String category
 																  ) {
-		log.debug("MCP tool find_stores_by_menu_item_category called with category='{}'.", category);
+		log.trace("MCP tool find_stores_by_menu_item_category called with category='{}'.", category);
 		return storeCatalogService.findStoresByMenuItemCategory(category);
 	}
 
@@ -59,7 +59,7 @@ public class FoodCatalogMcpTools {
 			@McpToolParam(description = "Menu item name")
 			String itemName
 															  ) {
-		log.debug("MCP tool find_stores_by_menu_item_name called with itemName='{}'.", itemName);
+		log.trace("MCP tool find_stores_by_menu_item_name called with itemName='{}'.", itemName);
 		return storeCatalogService.findStoresByMenuItemName(itemName);
 	}
 
@@ -71,7 +71,7 @@ public class FoodCatalogMcpTools {
 			@McpToolParam(description = "Store identifier")
 			String storeId
 										 ) {
-		log.debug("MCP tool get_store_menu called with storeId='{}'.", storeId);
+		log.trace("MCP tool get_store_menu called with storeId='{}'.", storeId);
 		return storeCatalogService.getStoreMenu(storeId);
 	}
 }
