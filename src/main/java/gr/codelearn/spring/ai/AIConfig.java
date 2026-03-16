@@ -1,8 +1,10 @@
 package gr.codelearn.spring.ai;
 
 import gr.codelearn.spring.ai.food.catalog.StoreCatalogService;
+import io.modelcontextprotocol.client.McpSyncClient;
 import io.netty.channel.ChannelOption;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
@@ -11,9 +13,13 @@ import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.ai.mcp.SyncMcpToolCallback;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -26,6 +32,9 @@ import reactor.netty.resources.ConnectionProvider;
 import javax.sql.DataSource;
 import java.time.Duration;
 
+import static java.util.Arrays.stream;
+
+@Slf4j
 @RequiredArgsConstructor
 @Configuration
 public class AIConfig {
@@ -136,6 +145,34 @@ public class AIConfig {
 				.defaultOptions(ChatOptions.builder()
 										   .temperature(0.1)
 										   .build())
+				.build();
+	}
+
+	@Bean
+	public ToolCallback[] foodCatalogMcpToolCallbacks(@Qualifier("food-catalog") McpSyncClient foodCatalogMcpClient) {
+		ToolCallback[] callbacks = foodCatalogMcpClient.listTools(null)
+													   .tools()
+													   .stream()
+													   .map(tool -> (ToolCallback) new SyncMcpToolCallback(foodCatalogMcpClient, tool))
+													   .toArray(ToolCallback[]::new);
+		log.info("MCP-only callbacks: {}", stream(callbacks)
+				.map(ToolCallback::getToolDefinition)
+				.map(ToolDefinition::name)
+				.toList());
+		return callbacks;
+	}
+
+	@Bean
+	public ChatClient foodCatalogMcpChatClient(ChatClient.Builder chatClientBuilder,
+											   @Qualifier("foodCatalogMcpToolCallbacks") ToolCallback[] foodCatalogMcpToolCallbacks) {
+		return chatClientBuilder
+				.defaultSystem("""
+							   You are a food catalog assistant.
+							   Use only the provided MCP tools to answer catalog questions.
+							   Do not invent store names, cuisines, or menu items.
+							   If tools return no results, say so clearly.
+							   """)
+				.defaultTools(foodCatalogMcpToolCallbacks)
 				.build();
 	}
 

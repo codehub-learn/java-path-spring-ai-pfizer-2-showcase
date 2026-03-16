@@ -12,6 +12,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -273,11 +274,66 @@ public class SpringAiDemo {
 					try {
 						IO.print("\nAI> ");
 
-						Prompt prompt = new Prompt(List.of(
-								new UserMessage(userInput)));
+						Prompt prompt = new Prompt(List.of(new UserMessage(userInput)));
 
 						var full = new StringBuilder();
 						Flux<ChatResponse> events = moviesChatClient.prompt(prompt).stream().chatResponse();
+
+						events.doOnNext(cr -> {
+								  String chunk = cr.getResult().getOutput().getText();
+								  if (chunk != null && !chunk.isBlank()) {
+									  full.append(chunk);
+									  IO.print(chunk);
+								  }
+							  })
+							  .doOnError(e -> {
+								  log.error("Streaming error: {}", e.getMessage(), e);
+								  IO.println("\nError: " + e.getMessage());
+							  })
+							  .doOnComplete(() -> {
+								  IO.println("\n");
+								  log.trace("Full response chars: {}", full.length());
+							  })
+							  .blockLast();
+
+					} catch (Exception e) {
+						log.error("Streaming call failed: {}", e.getMessage(), e);
+						IO.println("Error: " + e.getMessage());
+					}
+				}
+			}
+		};
+	}
+
+	@Bean
+	CommandLineRunner askOllamaInteractivelyViaMcpChatClient(final ChatClient foodCatalogMcpChatClient) {
+		return _ -> {
+			try (Scanner scanner = new Scanner(System.in)) {
+				IO.println("Interactive AI-based Ollama CLI (type 'exit' to quit)");
+				while (true) {
+					IO.print("\nYou> ");
+					String userInput = scanner.nextLine();
+					if (userInput == null) {
+						break;
+					}
+
+					userInput = userInput.trim();
+					if (userInput.isEmpty()) {
+						continue;
+					}
+
+					if ("exit".equalsIgnoreCase(userInput) || "quit".equalsIgnoreCase(userInput)) {
+						IO.println("Bye.");
+						break;
+					}
+
+					try {
+						IO.print("\nAI> ");
+
+						Prompt prompt = new Prompt(List.of(new UserMessage(userInput)));
+
+						var full = new StringBuilder();
+						Flux<ChatResponse> events = foodCatalogMcpChatClient.prompt(prompt).stream().chatResponse();
 
 						events.doOnNext(cr -> {
 								  String chunk = cr.getResult().getOutput().getText();

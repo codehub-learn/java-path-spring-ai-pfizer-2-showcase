@@ -127,16 +127,25 @@ spring:
         schema-validation: true
     mcp:
       server:
+        name: food-catalog-mcp
+        version: 1.0.0
         enabled: true
         type: sync
         protocol: streamable
-        name: food-catalog-mcp
-        version: 1.0.0
         annotation-scanner:
           enabled: true
         streamable-http:
           mcp-endpoint: /mcp
-
+      client:
+        name: food-demo-mcp-client
+        version: 1.0.0
+        enabled: true
+        type: sync
+        streamable-http:
+          connections:
+            food-catalog:
+              url: http://localhost:8080
+              endpoint: /mcp
   threads:
     virtual:
       enabled: true
