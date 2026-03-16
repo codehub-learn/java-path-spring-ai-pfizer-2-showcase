@@ -83,7 +83,7 @@ public class MultitenantJdbcChatMemoryRepository implements ChatMemoryRepository
 								  .query(Integer.class)
 								  .single();
 		int base = (baseIndex == null ? 0 : baseIndex);
-		
+
 		String insertSql = """
 						   INSERT INTO chat_memory (tenant_id, user_id, conversation_id, message_index, role, content)
 						   VALUES (:tenantId, :userId, :conversationId, :messageIndex, :role, :content)

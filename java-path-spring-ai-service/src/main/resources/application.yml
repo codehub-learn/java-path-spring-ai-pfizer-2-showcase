@@ -126,16 +126,6 @@ spring:
         dimensions: 768
         schema-validation: true
     mcp:
-      server:
-        name: food-catalog-mcp
-        version: 1.0.0
-        enabled: true
-        type: sync
-        protocol: streamable
-        annotation-scanner:
-          enabled: true
-        streamable-http:
-          mcp-endpoint: /mcp
       client:
         name: food-demo-mcp-client
         version: 1.0.0
@@ -146,6 +136,8 @@ spring:
             food-catalog:
               url: http://localhost:8080
               endpoint: /mcp
+        toolcallback:
+          enabled: true
   threads:
     virtual:
       enabled: true
@@ -160,6 +152,7 @@ logging:
     org.springframework.ai: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
-    org.springframework.web: DEBUG
+    org.springframework.web: INFO
 server:
   address: 0.0.0.0 # Needed for Claude Desktop MCP Server registration to work
+  port: 80

@@ -1,7 +1,6 @@
 package gr.codelearn.spring.ai;
 
 import gr.codelearn.spring.ai.food.catalog.StoreCatalogService;
-import io.modelcontextprotocol.client.McpSyncClient;
 import io.netty.channel.ChannelOption;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +30,7 @@ import reactor.netty.resources.ConnectionProvider;
 
 import javax.sql.DataSource;
 import java.time.Duration;
+import java.util.List;
 
 import static java.util.Arrays.stream;
 
@@ -148,17 +148,17 @@ public class AIConfig {
 				.build();
 	}
 
-	@Bean
-	public ToolCallback[] foodCatalogMcpToolCallbacks(@Qualifier("food-catalog") McpSyncClient foodCatalogMcpClient) {
-		ToolCallback[] callbacks = foodCatalogMcpClient.listTools(null)
-													   .tools()
-													   .stream()
-													   .map(tool -> (ToolCallback) new SyncMcpToolCallback(foodCatalogMcpClient, tool))
-													   .toArray(ToolCallback[]::new);
+	@Bean("foodCatalogMcpToolCallbacks")
+	public ToolCallback[] foodCatalogMcpToolCallbacks(List<ToolCallback> toolCallbacks) {
+		ToolCallback[] callbacks = toolCallbacks.stream()
+												.filter(SyncMcpToolCallback.class::isInstance)
+												.toArray(ToolCallback[]::new);
+
 		log.info("MCP-only callbacks: {}", stream(callbacks)
 				.map(ToolCallback::getToolDefinition)
 				.map(ToolDefinition::name)
 				.toList());
+
 		return callbacks;
 	}
 
@@ -168,7 +168,7 @@ public class AIConfig {
 		return chatClientBuilder
 				.defaultSystem("""
 							   You are a food catalog assistant.
-							   Use only the provided MCP tools to answer catalog questions.
+							   Use only the provided MCP tools to answer questions.
 							   Do not invent store names, cuisines, or menu items.
 							   If tools return no results, say so clearly.
 							   """)

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xmlns="http://maven.apache.org/POM/4.0.0"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<!-- Packaging -->
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Versioning -->
+	<artifactId>java-path-spring-ai-mcp-server</artifactId>
+	<parent>
+		<groupId>gr.codelearn</groupId>
+		<artifactId>java-path-spring-ai</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<!-- Meta-data -->
+	<name>[${project.artifactId}]</name>
+	<description>Spring AI Demo MCP Server</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
+		</dependency>
+	</dependencies>
+</project>
