@@ -5,8 +5,8 @@ import gr.codelearn.spring.ai.food.catalog.StoreMenuResource;
 import gr.codelearn.spring.ai.food.catalog.StoreSummaryResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springaicommunity.mcp.annotation.McpTool;
-import org.springaicommunity.mcp.annotation.McpToolParam;
+import org.springframework.ai.mcp.annotation.McpTool;
+import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,9 +18,8 @@ public class FoodCatalogMcpTools {
 	private final StoreCatalogService storeCatalogService;
 
 	@McpTool(name = "find_stores_by_title",
-			 description = "Find QuickBite stores by title or partial store name.")
-	public List<StoreSummaryResource> findStoresByTitle(
-			@McpToolParam(description = "Store title or partial store title") String title) {
+	         description = "Find QuickBite stores by title or partial store name.")
+	public List<StoreSummaryResource> findStoresByTitle(@McpToolParam(description = "Store title or partial store title") String title) {
 		log.trace("MCP tool find_stores_by_title called with title='{}'.", title);
 		return storeCatalogService.findStoresByTitle(title);
 	}
@@ -32,9 +31,7 @@ public class FoodCatalogMcpTools {
 					"and other valid cuisine enum values."
 	)
 	public List<StoreSummaryResource> findStoresByCuisine(
-			@McpToolParam(description = "Cuisine name such as JAPANESE, ITALIAN, MEXICAN, SUSHI, VEGAN, or DESSERTS")
-			String cuisine
-														 ) {
+			@McpToolParam(description = "Cuisine name such as JAPANESE, ITALIAN, MEXICAN, SUSHI, VEGAN, or DESSERTS") String cuisine) {
 		log.trace("MCP tool find_stores_by_cuisine called with cuisine='{}'.", cuisine);
 		return storeCatalogService.findStoresByCuisine(cuisine);
 	}
@@ -44,9 +41,7 @@ public class FoodCatalogMcpTools {
 			description = "Find QuickBite stores by menu item category."
 	)
 	public List<StoreSummaryResource> findStoresByMenuItemCategory(
-			@McpToolParam(description = "Menu item category value")
-			String category
-																  ) {
+			@McpToolParam(description = "Menu item category value") String category) {
 		log.trace("MCP tool find_stores_by_menu_item_category called with category='{}'.", category);
 		return storeCatalogService.findStoresByMenuItemCategory(category);
 	}
@@ -55,10 +50,7 @@ public class FoodCatalogMcpTools {
 			name = "find_stores_by_menu_item_name",
 			description = "Find QuickBite stores by menu item name such as burrito, tiramisu, coffee, brownie, maki, or pizza."
 	)
-	public List<StoreSummaryResource> findStoresByMenuItemName(
-			@McpToolParam(description = "Menu item name")
-			String itemName
-															  ) {
+	public List<StoreSummaryResource> findStoresByMenuItemName(@McpToolParam(description = "Menu item name") String itemName) {
 		log.trace("MCP tool find_stores_by_menu_item_name called with itemName='{}'.", itemName);
 		return storeCatalogService.findStoresByMenuItemName(itemName);
 	}
@@ -67,10 +59,7 @@ public class FoodCatalogMcpTools {
 			name = "get_store_menu",
 			description = "Get the full menu for a QuickBite store using the store identifier."
 	)
-	public StoreMenuResource getStoreMenu(
-			@McpToolParam(description = "Store identifier")
-			String storeId
-										 ) {
+	public StoreMenuResource getStoreMenu(@McpToolParam(description = "Store identifier") String storeId) {
 		log.trace("MCP tool get_store_menu called with storeId='{}'.", storeId);
 		return storeCatalogService.getStoreMenu(storeId);
 	}
